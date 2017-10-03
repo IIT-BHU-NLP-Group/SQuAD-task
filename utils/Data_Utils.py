@@ -38,6 +38,11 @@ class Vocabulary:
 			return self.default_index
 		return self.word_to_index[word]
 
+	def get_index_word(self,idx):
+		if (idx < 0) or (idx>=counter):
+			return self.default_index
+		return self.index_to_word[idx] 
+
 	def get_sentence_index(self,sentence):
 		sent = sentence.split(' ')
 		return [ self.get_word_index(w) for w in sent]
@@ -45,7 +50,7 @@ class Vocabulary:
 
 # Class to handle data, make batches
 class Data:
-	def __init__(self):
+	def __init__(self, debug_mode = False, percent_debug_data = 10):
 		print 'Loading data from file ...'
 		with open('../Data/SQuAD/PreProcessed_Data/augmented_train.txt') as f:
 			self.datas = f.read()
@@ -57,6 +62,9 @@ class Data:
 			for p in d['paragraphs']:
 				for q in p['qas']:
 					self.data_size += 1
+		if debug_mode:
+			self.data_size = (0.01*percent_debug_data*self.data_size)
+			self.data['data'] = self.data['data'][:self.data_size]
 
 	def example_iter(self):
 		for d in self.data['data']:
@@ -81,10 +89,15 @@ class Data:
 			max_question_len = max(max_question_len, len(e['question_idx']))
 			max_para_len = max(max_para_len, len(e['para_idx']))
 		for e in batch:
-			# e['para'] = ( (vocab.default_word + ' ')*(max_para_len-len(e['para_idx'])) + e['para'] ).strip()
 			e['para_idx'] = [self.vocab.default_index]*(max_para_len-len(e['para_idx'])) + e['para_idx']
-			# e['question'] = ( (vocab.default_word + ' ')*(max_para_len-len(e['question_idx'])) + e['question'] ).strip()
 			e['question_idx'] = [self.vocab.default_index]*(max_para_len-len(e['question_idx'])) + e['question_idx']
+		e['para_vectors'] = []
+		e['question_vectors'] = []
+		# for e in batch:
+		# 	for i in e['para_idx']:
+		# 		e['para_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
+		# 	for i in e['question_idx']:
+		# 		e['question_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
 		return batch
 
 	def minibatch_iter(self, batch_size = 50):
