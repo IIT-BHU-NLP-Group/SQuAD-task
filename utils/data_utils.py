@@ -52,7 +52,7 @@ class Vocabulary:
 class Data:
 	def __init__(self, debug_mode = False, percent_debug_data = 10):
 		print 'Loading data from file ...'
-		with open('../Data/SQuAD/PreProcessed_Data/augmented_train.txt') as f:
+		with open('../data/SQuAD/PreProcessed_Data/augmented_train.txt') as f:
 			self.datas = f.read()
 			self.data = json.loads(self.datas)
 		self.vocab = Vocabulary()
@@ -88,16 +88,18 @@ class Data:
 		for e in batch:
 			max_question_len = max(max_question_len, len(e['question_idx']))
 			max_para_len = max(max_para_len, len(e['para_idx']))
+		
+		# Add padding 
 		for e in batch:
 			e['para_idx'] = [self.vocab.default_index]*(max_para_len-len(e['para_idx'])) + e['para_idx']
 			e['question_idx'] = [self.vocab.default_index]*(max_para_len-len(e['question_idx'])) + e['question_idx']
 		e['para_vectors'] = []
 		e['question_vectors'] = []
-		# for e in batch:
-		# 	for i in e['para_idx']:
-		# 		e['para_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
-		# 	for i in e['question_idx']:
-		# 		e['question_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
+		for e in batch:
+			for i in e['para_idx']:
+				e['para_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
+			for i in e['question_idx']:
+				e['question_vectors'].append(get_word_vector(self.vocab.get_index_word(i)))
 		return batch
 
 	def minibatch_iter(self, batch_size = 50):
