@@ -6,13 +6,21 @@ import sys
 sys.path.append('utils')
 from get_word_vectors import get_word_vector
 
+class Token_Node:
+	def __init__(self,Id, word, char_begin=0, char_end=0):
+		self.id = Id
+		self.word = word
+		self.char_begin = char_begin 
+		self.char_end = char_end
+		self.token_vector = None
+
 # Vocabulary is important if you want to make trainable embeddings. Then You also need to have a constant size lookp table.
 # DATA UTILS : PREPARE VOCABULARY FILE
 class Vocabulary:
 	def __init__(self):
 		self.word_to_index = dict()
 		self.index_to_word = dict()
-		self.counter = 0
+		self.counter = 1
 		self.default_index = 0
 		self.default_word = '<default_word>'
 
@@ -61,8 +69,9 @@ class Data:
 		with open('data/SQuAD/PreProcessed_Data/augmented_train.txt') as f:
 			self.datas = f.read()
 			self.data = json.loads(self.datas)
-		self.vocab = Vocabulary()
-		self.vocab.make_vocab(self.data)
+		with open('../data/SQuAD/pickled-vocab','rb') as f:
+			self.vocab = load(f,2)
+		# self.vocab.make_vocab(self.data)
 		self.data_size = 0 # No. of Examples
 		for d in tqdm(self.data['data']):
 			for p in d['paragraphs']:
