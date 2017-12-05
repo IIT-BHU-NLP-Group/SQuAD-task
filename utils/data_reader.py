@@ -1,10 +1,14 @@
+import pickle
 import pandas as pd
+
 from random import shuffle
+from data_utils import Vocabulary
 
 class DataReader:
 	def __init__(
 			self, 
 			file_path,
+			vocab_path,
 			train_split_ratio=0.80,
 			dev_split_ratio=0.10,
 			test_split_ratio=0.10,
@@ -14,6 +18,8 @@ class DataReader:
 		self.read_data(
 			train_split_ratio, dev_split_ratio, test_split_ratio, 
 			debug_mode, percent_debug_data)
+
+		self.vocab = pickle.load(open(vocab_path, 'rb'))
 
 	def read_data(
 			self, 
@@ -25,11 +31,17 @@ class DataReader:
 		# Read CSV file
 		df = pd.read_csv(self.file_path, delimiter=",")
 		self.data = df.to_dict('records')
+
+		# Temporary fix (Error in making pandas CSV)
+		for x in self.data:
+			x['question'] = [int(i) for i in x['question'].strip('[').strip(']').split(',')]
+			x['context'] = [int(i) for i in x['context'].strip('[').strip(']').split(',')]
+
 		# Now, `self.data` is a list of dict
-		shuffle(self.data)
+		# shuffle(self.data)
 
 		if debug_mode:
-			self.data = self.data[:percent_debug_data * 0.01 * len(self.data)]
+			self.data = self.data[:int(percent_debug_data * 0.01 * len(self.data))]
 
 		data_size = len(self.data)
 		self.train = self.data[:int(train_split_ratio*data_size)]

@@ -50,7 +50,7 @@ class Vocabulary:
 		return self.word_to_index[word]
 
 	def get_index_word(self,idx):
-		if (idx < 0) or (idx >= self.counter):
+		if (idx <= 0) or (idx >= self.counter):
 			return self.default_index
 		return self.index_to_word[idx] 
 
