@@ -9,9 +9,9 @@ class DataReader:
 			self, 
 			file_path,
 			vocab_path,
-			train_split_ratio=0.80,
-			dev_split_ratio=0.10,
-			test_split_ratio=0.10,
+			train_split_ratio=0.90,
+			dev_split_ratio=0.05,
+			test_split_ratio=0.05,
 			debug_mode=False, percent_debug_data=10):
 		self.file_path = file_path
 
@@ -38,7 +38,7 @@ class DataReader:
 			x['context'] = [int(i) for i in x['context'].strip('[').strip(']').split(',')]
 
 		# Now, `self.data` is a list of dict
-		# shuffle(self.data)
+		shuffle(self.data)
 
 		if debug_mode:
 			self.data = self.data[:int(percent_debug_data * 0.01 * len(self.data))]

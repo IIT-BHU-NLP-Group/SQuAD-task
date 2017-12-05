@@ -10,7 +10,7 @@ from get_word_vectors import VECTOR_DIM
 class DCNModel():
 	"""docstring for Model"""
 	def __init__(self, data_reader, *arg):
-		self.batch_size = 3
+		self.batch_size = 40
 		self.embed_size = 300
 		self.lstm_units = 100
 		self.dropout = 0.0
@@ -76,18 +76,18 @@ class DCNModel():
 		softmax_weight_start = tf.Variable(tf.random_uniform([2*self.lstm_units, 1]), name='softmax_weight_start')
 		softmax_bias_start = tf.Variable(tf.random_uniform([1, 1]), name='softmax_bias_start')
 
-		scores_start = tf.matmul(embed, softmax_weight_start) + softmax_bias_start
-		scores_start = tf.reshape(scores_start, [-1, tf.shape(self.coattention_context)[1]])
+		self.scores_start = tf.matmul(embed, softmax_weight_start) + softmax_bias_start
+		self.scores_start = tf.reshape(self.scores_start, [-1, tf.shape(self.coattention_context)[1]])
 
-		loss_start = tf.losses.sparse_softmax_cross_entropy(self.start_label, scores_start)
+		loss_start = tf.losses.sparse_softmax_cross_entropy(self.start_label, self.scores_start)
 		
 		softmax_weight_end = tf.Variable(tf.random_uniform([2*self.lstm_units, 1]), name='softmax_weight_end')
 		softmax_bias_end = tf.Variable(tf.random_uniform([1, 1]), name='softmax_bias_end')
 		
-		scores_end = tf.matmul(embed, softmax_weight_end) + softmax_bias_end
-		scores_end = tf.reshape(scores_end, [-1, tf.shape(self.coattention_context)[1]])
+		self.scores_end = tf.matmul(embed, softmax_weight_end) + softmax_bias_end
+		self.scores_end = tf.reshape(self.scores_end, [-1, tf.shape(self.coattention_context)[1]])
 
-		loss_end = tf.losses.sparse_softmax_cross_entropy(self.end_label, scores_end)
+		loss_end = tf.losses.sparse_softmax_cross_entropy(self.end_label, self.scores_end)
 		# TODO: End positions must adapt from start positions.
 		
 		self.loss = tf.reduce_sum(tf.add(loss_start, loss_end))
@@ -105,12 +105,16 @@ class DCNModel():
 		
 		# Add padding 
 		for e in batch:
-			padding_length_para = (max_para_len-len(e['context']))
+			e['padding_length_para'] = (max_para_len-len(e['context']))
 			e['context'] = [self.data.vocab.default_index]*(max_para_len-len(e['context'])) + e['context']
 			e['question'] = [self.data.vocab.default_index]*(max_question_len-len(e['question'])) + e['question']
 
-			e['answer_start'] = e['answer_start'] + padding_length_para
-			e['answer_end'] = e['answer_end'] + padding_length_para
+			e['answer_start'] = e['answer_start'] + e['padding_length_para']
+			e['answer_end'] = e['answer_end'] + e['padding_length_para']
+
+			# Temporary
+			if e['answer_end'] == max_para_len:
+				e['answer_end'] -= 1;
 
 		return batch
 
@@ -146,17 +150,34 @@ class DCNModel():
 
 			print "Epoch %s: Training Loss = %s \n" % (epo, np.sum(total_loss) / len(total_loss))
 
-	def predict(self, passages, questions):
-		pass
+	def predict(self, batch):
+		batch = self.prepare_batch(batch)
+
+		para, question, start_index, end_index = [], [], [], []
+		for e in batch:
+			para.append(self.data.vocab.get_sentence_embeddings(e['context']))
+			question.append(self.data.vocab.get_sentence_embeddings(e['question']))	
+
+		feed_dict = {
+			self.passage_input_placeholder: para,
+			self.question_input_placeholder: question,
+		}
+
+		start, end = self.sess.run([self.scores_start, self.scores_end], feed_dict=feed_dict)
+		start_index = np.argmax(start, axis=1)
+		end_index = np.argmax(end, axis=1)
+
+		answers = []
+		for i1, i2, v in zip(start_index, end_index, batch):
+			answers.append([i1 - v['padding_length_para'], i2 - v['padding_length_para']]) 
+		return answers
 
 	def load(self, path):
-		pass
-		# saver = tf.train.Saver(self.layer_map)
-		# saver.restore(self.sess, path)
+		saver = tf.train.Saver()
+		saver.restore(self.sess, path)
 
 	def save(self, path):
-		pass
-		# saver = tf.train.Saver(self.layer_map)
-		# saver.save(self.sess, path)
+		saver = tf.train.Saver()
+		saver.save(self.sess, path)
 
 
