@@ -50,9 +50,10 @@ class DataReader:
 						int((train_split_ratio + dev_split_ratio) * data_size)]
 		self.test = self.data[int(- (test_split_ratio) * data_size):]
 		
-		shuffle(self.train)
-		shuffle(self.dev)
-		shuffle(self.test)
+		if not debug_mode:
+			shuffle(self.train)
+			shuffle(self.dev)
+			shuffle(self.test)
 
 		self.data_dict = {
 			'train':	self.train,
