@@ -11,7 +11,7 @@ class DCNModel():
 	"""docstring for Model"""
 	def __init__(self, data_reader, *arg):
 		self.batch_size = 40
-		self.embed_size = 300
+		self.embed_size = VECTOR_DIM
 		self.lstm_units = 100
 		self.dropout = 0.07
 
