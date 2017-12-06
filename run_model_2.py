@@ -19,7 +19,7 @@ model.load("./model.ckpt")
 
 # model.train(epochs=10)
 
-batch = main_data_reader.get_complete_batch('dev')[:20]
+batch = main_data_reader.get_complete_batch('dev')[:50]
 
 ans = model.predict(batch)
 
@@ -53,9 +53,7 @@ for x, a in zip(batch, ans):
 	if a == actual:
 		cnt += 1
 
-print "Exact Match (percent):" +  str(float(cnt*100)/n
+print "Exact Match (percent):" +  str(float(cnt*100)/n)
 
 
 # model.save("./model.ckpt")
-
-
