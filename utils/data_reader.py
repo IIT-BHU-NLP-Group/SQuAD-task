@@ -38,7 +38,7 @@ class DataReader:
 			x['context'] = [int(i) for i in x['context'].strip('[').strip(']').split(',')]
 
 		# Now, `self.data` is a list of dict
-		shuffle(self.data)
+		# shuffle(self.data)
 
 		if debug_mode:
 			self.data = self.data[:int(percent_debug_data * 0.01 * len(self.data))]
@@ -49,6 +49,10 @@ class DataReader:
 						int(train_split_ratio * data_size):
 						int((train_split_ratio + dev_split_ratio) * data_size)]
 		self.test = self.data[int(- (test_split_ratio) * data_size):]
+		
+		shuffle(self.train)
+		shuffle(self.dev)
+		shuffle(self.test)
 
 		self.data_dict = {
 			'train':	self.train,
