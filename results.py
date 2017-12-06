@@ -58,5 +58,6 @@ def evaluate_data(choice,model,main_data_reader):
 
 
 evaluate_data('train', model, main_data_reader)
+evaluate_data('dev', model, main_data_reader)
 
 

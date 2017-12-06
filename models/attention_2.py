@@ -13,7 +13,7 @@ class DCNModel():
 		self.batch_size = 40
 		self.embed_size = 300
 		self.lstm_units = 100
-		self.dropout = 0.0
+		self.dropout = 0.07
 
 		# self.data = DU.Data(debug_mode=True, percent_debug_data=1)
 		self.data = data_reader
