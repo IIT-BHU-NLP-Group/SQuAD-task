@@ -14,6 +14,7 @@ class DCNModel():
 		self.embed_size = VECTOR_DIM
 		self.lstm_units = 100
 		self.dropout = 0.07
+		self.learning_rate = 0.001
 
 		# self.data = DU.Data(debug_mode=True, percent_debug_data=1)
 		self.data = data_reader
@@ -95,7 +96,7 @@ class DCNModel():
 		self.optimizer = self.get_optimizer().minimize(self.loss)
 
 	def get_optimizer(self):
-		return tf.train.AdamOptimizer()
+		return tf.train.AdamOptimizer(self.learning_rate)
 
 	def prepare_batch(self, batch):
 		max_question_len, max_para_len = 0, 0
