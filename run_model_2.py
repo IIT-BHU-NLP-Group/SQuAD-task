@@ -15,9 +15,9 @@ main_data_reader = DR.DataReader(
 
 model = attention_2.DCNModel(main_data_reader)
 
-model.load("./model.ckpt")
+# model.load("./model.ckpt")
 
-# model.train(epochs=10)
+model.train(epochs=25)
 
 batch = main_data_reader.get_complete_batch('dev')[:50]
 
@@ -56,4 +56,4 @@ for x, a in zip(batch, ans):
 print "Exact Match (percent):" +  str(float(cnt*100)/n)
 
 
-# model.save("./model.ckpt")
+model.save("./model.ckpt")
